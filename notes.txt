@@ -1,0 +1,165 @@
+Django Notes:
+
+-Django is a full python web framework
+
+Set up a Django Development environment:
+
+    1. Get the latest version of python
+    2. pip install pipenv (pipenv is a dependency management tool for installing dependencies in virtual environments)
+
+Create a Django project:
+
+    1. Navigate to directory
+    2. pipenv install Django
+    3. open code in directory with code .
+    4. run pipenv shell
+    5. start a new project with django admin. django-admin startproject project_name . "use '.' to install in current directory
+
+New files:
+-settings.py
+-urls.py
+-manage.py is a wrapper for django-admin that takes in account the project settings
+
+** from now on we will use "python manage.py <command>"
+
+Configure the VSCode terminal to use the python executable in our virtual environment:
+
+    1. get the path of the virtual environment by running pipenv --venv, copy the path
+    2. Select interpreter in VSCode and paste the path and append "\bin\python"
+    3. NOW YOU CAN USE THE INTEGRATED TERMINAL!
+    4. Run python manage.py runserver to start your web server
+
+    Note: Sometimes you will get a syntax error in the terminal when running this commnand. Just open a new terminal and vscode should activate your virtual environment
+
+settings.py:
+
+    -included apps
+        -admin
+        -auth
+        -contenttypes
+        -sessions (legacy) we can remove this
+        -messages
+        -staticfiles (images, css)
+
+    Notes: we can add our own apps here
+
+        -we can add multiple apps to Django projects
+        -BREAK DOWN YOUR PROJECT INTO SMALL APPS THAT HANDLE ONLY ONE THING
+        -apps should not be coupled and have high focus
+
+To create a new app:
+
+    1. Run "python manage.py startapp <app_name>"
+    -Django will create a new directory in the root with the app
+
+App structure:
+
+    1. Migrations folder, used for generating database tables
+    2. admin.py where we define how the admin module interface looks
+    3. apps.py is where we configure the app
+    4. models.py where we define the db models
+    5. tests.py where we define unit tests
+    6. views.py is where the request handlers live
+
+Register the app in the settings.py file:
+
+    1. add the name of the app in single quotes 'app_name' to the INSTALLED_APPS array
+
+Views:
+
+    - views.py is where we define our views
+    - a view is where we handle requests, we take a request and send a response
+    - a view a "request handler", some frameworks call them actions, django calls them "views"
+
+    To create a view function:
+        1. define a function like this: def say_hello(request):
+        2. We need to return a response, so we will use the http module in django. to import: from django.http import HttpResponse
+        3. We need to return the response: return HttpResponse('Hello World')
+        - We should have a function that looks like this: 
+
+            def say_hello(request):
+                return HttpResponse('Hello World')
+
+    Map the url (endpoint) to the function:
+
+        4. We should add a new file to the app called urls.py
+        5. import "from django.urls import path"
+        6. import "from . import views"
+        7. define a special variable called urlpatterns = []
+        8. add a path('endpoint/', views.say_hello) object to this array
+    
+    Add the urls conf to the main urls.py file
+
+        9. add from djangp.urls import include
+        10. add path('appname/', include('appname.urls')) to the urlpatterns array
+
+Templates:
+
+    - a template is how we can return html content to clients
+
+    1. add a new folder called "templates"
+    2. add an html file to the folder
+    3. In our view, we can the render() function to return a template to the client, we use render(request, 'template_name.html')
+    - we could render a 3rd param using the context mapping param such as render(request, 'template_name.html', {'name' : 'Madison'})
+    - to utilize this, our template should use the variable we passes with double curly braces {{ name }}, and it will be dynamically rendered when it is returned to the client
+
+    -BUT FOR THE MOST PART, we dont use django to return html content using templates now. We normally use django to build APIs that return data to the client
+
+Debugging in VSCode:
+
+    1. Open the Run and Debug panel
+    2. Create a launch.json file
+    3. Select Django
+    4. We can add additional args to specify a port, so it does not clash with port 8000, the defualt port of the django web server, so we can debug on another port
+    
+        - it should look like this:
+
+            "args" : [
+                "runserver",
+                "9000" -or whatever port you want to use
+            ]
+
+    5. Now we can debug the program
+
+Django debug toolbar:
+
+    1. install the toolbar with pipenv, pipenv install django-debug-toolbar
+    2. add 'debug_toolbar' to the INSTALLED_APPS array in settings.py
+    3. add a new url pattern in the main url conf module, in our app folder in urls.py add path('__debug__', include(debug_toolbar.urls)),
+    4. add the import to the file, import debug_toolbar
+    5. add middleware, in settings.py add 'debug_toolbar.middleware.DebugToolbarMiddleware', to the MIDDLEWARE array 
+    6. we need to add our internal IP address in settings.py
+        - like this:
+            INTERNAL_IPS = [
+                # ...
+                '127.0.0.1',
+                # ...
+            ]
+
+    -- that is all the setup. BUT, the toolbar will only appear in the browser if we return a proper html document, we need html and body elements
+        -like this:
+
+        <html>
+            <body>
+                stuff
+            </body>
+        </html>
+
+    - we have different toolbar menus to see different data
+    
+        -sql panel lets us see the queries that are sent to the database
+
+Data Models:
+
+    - Models are frameworks for data that we want to store, such as:
+
+    Product:
+        -title
+        -description
+        -price
+        -inventory
+    
+    Collection (or category for the product)
+        -title
+
+    - Django automatically creates IDs for us
